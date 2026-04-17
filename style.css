@@ -968,6 +968,12 @@ body.nav-open .mobile-menu__panel {
   .service-card__desc{
     font-size: 15px;
   }
+  .reveal-text{
+    font-size: 15px;
+  }
+  .section-sub{
+    font-size: 15px;
+  }
 }
 
 .project-card:hover {
