@@ -592,7 +592,8 @@ body.nav-open .mobile-menu__panel {
 /* Name — Playfair Display SC, tasteful sizing */
 .hero__name {
   font-family: var(--font-serif);
-  font-size: clamp(3rem, 7.5vw, 7rem);
+  /* font-size: clamp(3rem, 7.5vw, 7rem); */
+  font-size: 90px;
   font-weight: 600;
   color: var(--white);
   letter-spacing: .01em;
