@@ -945,7 +945,7 @@ body.nav-open .mobile-menu__panel {
     padding: 0 clamp(1rem, 4vw, 2rem);
   }
   p.hero__intro.reveal-hero {
-    font-size: 14px;
+    font-size: 15px;
   }
   .hero__role {
     flex-direction: column;
@@ -963,10 +963,10 @@ body.nav-open .mobile-menu__panel {
     text-align: center;
   }
   .section-sub{
-    font-size: 14px;
+    font-size: 15px;
   }
   .service-card__desc{
-    font-size: 14px;
+    font-size: 15px;
   }
 }
 
