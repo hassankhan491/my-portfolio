@@ -943,6 +943,9 @@ body.nav-open .mobile-menu__panel {
     gap: 1rem;
     padding: 0 clamp(1rem, 4vw, 2rem);
   }
+  p.hero__intro.reveal-hero {
+    font-size: 14px;
+}
 }
 
 .project-card:hover {
