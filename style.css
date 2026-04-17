@@ -945,7 +945,22 @@ body.nav-open .mobile-menu__panel {
   }
   p.hero__intro.reveal-hero {
     font-size: 14px;
-}
+  }
+  .hero__role {
+    flex-direction: column;
+    gap: .4rem;
+    align-items: center;
+  }
+  .hero__role-rotate {
+    min-width: 0;
+    width: 100%;
+    text-align: center;
+  }
+  .hero__role-rotate span {
+    left: 50%;
+    transform: translateX(-50%) translateY(100%);
+    white-space: nowrap;
+  }
 }
 
 .project-card:hover {
