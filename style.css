@@ -962,6 +962,12 @@ body.nav-open .mobile-menu__panel {
     width: 100%;
     text-align: center;
   }
+  .section-header p{
+    font-size: 14px;
+  }
+  .service-card__desc{
+    font-size: 14px;
+  }
 }
 
 .project-card:hover {
