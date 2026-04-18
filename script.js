@@ -193,22 +193,45 @@ function initMarquee(){
 }
 
 /* ─── Number counters ────────────────────────────────── */
-function initCounters(){
-  const obs=new IntersectionObserver(entries=>{
-    entries.forEach(e=>{
-      if(!e.isIntersecting)return;
-      obs.unobserve(e.target);
-      const el=e.target;
-      const target=parseInt(el.dataset.count,10);
-      const t0=performance.now();const dur=1800;
-      (function frame(now){
-        const t=Math.min((now-t0)/dur,1);
-        el.textContent=Math.round(easeOut(t)*target)+'+';
-        if(t<1)requestAnimationFrame(frame);
-      })(performance.now());
+function initCounters(scroller){
+  const els=[...document.querySelectorAll('.stat__num[data-count]')];
+  if(!els.length)return;
+  const triggered=new Set();
+
+  function animateCounter(el){
+    const target=parseInt(el.dataset.count,10);
+    const suffix=el.dataset.suffix||'+';
+    const t0=performance.now();const dur=1800;
+    (function frame(now){
+      const t=Math.min((now-t0)/dur,1);
+      el.textContent=Math.round(easeOut(t)*target)+suffix;
+      if(t<1)requestAnimationFrame(frame);
+    })(performance.now());
+  }
+
+  function check(){
+    const scrollY=scroller?scroller.scrollY:window.scrollY;
+    const winH=window.innerHeight;
+    els.forEach(el=>{
+      if(triggered.has(el))return;
+      const rect=el.getBoundingClientRect();
+      // For smooth-scroll, getBoundingClientRect reflects CSS-transform position
+      // so we just check if element is in viewport
+      if(rect.top<winH*0.88 && rect.bottom>0){
+        triggered.add(el);
+        animateCounter(el);
+      }
     });
-  },{threshold:.5});
-  document.querySelectorAll('.stat__num[data-count]').forEach(el=>obs.observe(el));
+  }
+
+  // Hook into custom scroller ticks
+  if(scroller){
+    scroller.on(check);
+  }
+  // Fallback for native scroll
+  window.addEventListener('scroll',check,{passive:true});
+  // Check immediately in case stats are already in view
+  setTimeout(check,400);
 }
 
 /* ─── IntersectionObserver for scroll reveals ────────── */
@@ -467,27 +490,16 @@ window.scrollToTop=function(){
   })(performance.now());
 };
 
-/* ─── Contact Form (EmailJS) ─────────────────────────── */
+/* ─── Contact Form (Web3Forms) ───────────────────────── */
 /*
-  ⚠️  SETUP — 3 steps (5 minutes):
-  1. emailjs.com par FREE account banao
-  2. Gmail service connect karo → Service ID copy karo
-  3. Template banao → Template ID copy karo
-  4. Account > API Keys → Public Key copy karo
-  Phir neeche teeno values replace karo:
+  ⚠️  SETUP — 1 step only:
+  1. web3forms.com par jao
+  2. Apna email daalo → Access Key milegi
+  3. index.html mein hidden input ke value="YOUR_WEB3FORMS_KEY" replace karo
 */
-const EMAILJS_PUBLIC_KEY  = 'YOUR_PUBLIC_KEY';   // ← yahan apni Public Key daalo
-const EMAILJS_SERVICE_ID  = 'YOUR_SERVICE_ID';   // ← yahan apna Service ID daalo
-const EMAILJS_TEMPLATE_ID = 'YOUR_TEMPLATE_ID';  // ← yahan apna Template ID daalo
-
 function initContactForm(){
   const form=document.getElementById('contactForm');
   if(!form)return;
-
-  // EmailJS initialize
-  if(window.emailjs && EMAILJS_PUBLIC_KEY !== 'YOUR_PUBLIC_KEY'){
-    emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
-  }
 
   const btn=document.getElementById('formSubmit');
   const success=document.getElementById('formSuccess');
@@ -502,37 +514,36 @@ function initContactForm(){
     success.style.display='none';
     error.style.display='none';
 
-    // Check karo ke EmailJS configured hai
-    if(!window.emailjs || EMAILJS_PUBLIC_KEY === 'YOUR_PUBLIC_KEY'){
-      // Fallback: Formspree use karo agar EmailJS configure nahi
-      try{
-        const data=new FormData(form);
-        const res=await fetch('https://formspree.io/f/hassanuddin491@gmail.com',{
-          method:'POST', body:data, headers:{Accept:'application/json'},
-        });
-        if(res.ok){ showSuccess(); } else { throw new Error(); }
-      } catch(err){ showError(); }
-      finally{ btn.classList.remove('is-loading'); btn.disabled=false; }
+    // Check if access key is configured
+    const keyInput=form.querySelector('input[name="access_key"]');
+    if(!keyInput || keyInput.value==='YOUR_WEB3FORMS_KEY'){
+      // Show friendly error
+      btn.classList.remove('is-loading');
+      btn.disabled=false;
+      showError('⚙️ Form abhi configure nahi hua — web3forms.com se key lo aur index.html mein paste karo.');
       return;
     }
 
-    // EmailJS ke zariye email bhejo
-    const templateParams = {
-      from_name:    (form.firstName?.value||'') + ' ' + (form.lastName?.value||''),
-      from_email:   form.email?.value || '',
-      subject:      form.subject?.value || 'New Message',
-      budget:       form.budget?.value || 'Not specified',
-      message:      form.message?.value || '',
-      to_email:     'hassanuddin491@gmail.com',
-      reply_to:     form.email?.value || '',
-    };
-
     try{
-      await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams);
-      showSuccess();
-      form.reset();
+      const formData=new FormData(form);
+      // Combine first + last name
+      const firstName=formData.get('firstName')||'';
+      const lastName=formData.get('lastName')||'';
+      formData.set('name', `${firstName} ${lastName}`.trim());
+
+      const res=await fetch('https://api.web3forms.com/submit',{
+        method:'POST',
+        body: formData,
+      });
+      const json=await res.json();
+      if(res.ok && json.success){
+        showSuccess();
+        form.reset();
+      } else {
+        throw new Error(json.message||'Submission failed');
+      }
     } catch(err){
-      console.error('EmailJS Error:', err);
+      console.error('Form error:',err);
       showError();
     } finally{
       btn.classList.remove('is-loading');
@@ -545,10 +556,11 @@ function initContactForm(){
     success.classList.add('visible');
     setTimeout(()=>{success.classList.remove('visible');success.style.display='none';},6000);
   }
-  function showError(){
+  function showError(msg){
     error.style.display='flex';
     error.classList.add('visible');
-    setTimeout(()=>{error.classList.remove('visible');error.style.display='none';},6000);
+    if(msg){const span=error.querySelector('span');if(span)span.textContent=msg;}
+    setTimeout(()=>{error.classList.remove('visible');error.style.display='none';},7000);
   }
 }
 
@@ -628,7 +640,7 @@ runLoader().then(()=>{
 
   initGSAP(scroller);
   initRevealObserver();
-  initCounters();
+  initCounters(scroller);
   initAnchorScroll(scroller);
   initMobileNav();
   initTopBtn(scroller);

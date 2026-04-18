@@ -1466,7 +1466,7 @@ body.nav-open .mobile-menu__panel {
 .stat__num {
   display: block;
   font-family: var(--font-serif);
-  font-size: clamp(2.4rem, 5vw, 4rem);
+  font-size: 3.5rem;
   color: var(--white);
   margin-bottom: .35rem;
 }
