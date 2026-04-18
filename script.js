@@ -467,46 +467,89 @@ window.scrollToTop=function(){
   })(performance.now());
 };
 
-/* ─── Contact Form ───────────────────────────────────── */
+/* ─── Contact Form (EmailJS) ─────────────────────────── */
+/*
+  ⚠️  SETUP — 3 steps (5 minutes):
+  1. emailjs.com par FREE account banao
+  2. Gmail service connect karo → Service ID copy karo
+  3. Template banao → Template ID copy karo
+  4. Account > API Keys → Public Key copy karo
+  Phir neeche teeno values replace karo:
+*/
+const EMAILJS_PUBLIC_KEY  = 'YOUR_PUBLIC_KEY';   // ← yahan apni Public Key daalo
+const EMAILJS_SERVICE_ID  = 'YOUR_SERVICE_ID';   // ← yahan apna Service ID daalo
+const EMAILJS_TEMPLATE_ID = 'YOUR_TEMPLATE_ID';  // ← yahan apna Template ID daalo
+
 function initContactForm(){
   const form=document.getElementById('contactForm');
   if(!form)return;
+
+  // EmailJS initialize
+  if(window.emailjs && EMAILJS_PUBLIC_KEY !== 'YOUR_PUBLIC_KEY'){
+    emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+  }
 
   const btn=document.getElementById('formSubmit');
   const success=document.getElementById('formSuccess');
   const error=document.getElementById('formError');
 
-  form.addEventListener('submit',async e=>{
+  form.addEventListener('submit', async e=>{
     e.preventDefault();
     btn.classList.add('is-loading');
     btn.disabled=true;
     success.classList.remove('visible');
     error.classList.remove('visible');
+    success.style.display='none';
+    error.style.display='none';
 
-    const data=new FormData(form);
+    // Check karo ke EmailJS configured hai
+    if(!window.emailjs || EMAILJS_PUBLIC_KEY === 'YOUR_PUBLIC_KEY'){
+      // Fallback: Formspree use karo agar EmailJS configure nahi
+      try{
+        const data=new FormData(form);
+        const res=await fetch('https://formspree.io/f/hassanuddin491@gmail.com',{
+          method:'POST', body:data, headers:{Accept:'application/json'},
+        });
+        if(res.ok){ showSuccess(); } else { throw new Error(); }
+      } catch(err){ showError(); }
+      finally{ btn.classList.remove('is-loading'); btn.disabled=false; }
+      return;
+    }
+
+    // EmailJS ke zariye email bhejo
+    const templateParams = {
+      from_name:    (form.firstName?.value||'') + ' ' + (form.lastName?.value||''),
+      from_email:   form.email?.value || '',
+      subject:      form.subject?.value || 'New Message',
+      budget:       form.budget?.value || 'Not specified',
+      message:      form.message?.value || '',
+      to_email:     'hassanuddin491@gmail.com',
+      reply_to:     form.email?.value || '',
+    };
 
     try{
-      const res=await fetch(form.action,{
-        method:'POST',
-        body:data,
-        headers:{Accept:'application/json'},
-      });
-
-      if(res.ok){
-        success.classList.add('visible');
-        success.style.display='flex';
-        form.reset();
-      } else {
-        throw new Error('Server error');
-      }
+      await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams);
+      showSuccess();
+      form.reset();
     } catch(err){
-      error.classList.add('visible');
-      error.style.display='flex';
-    } finally {
+      console.error('EmailJS Error:', err);
+      showError();
+    } finally{
       btn.classList.remove('is-loading');
       btn.disabled=false;
     }
   });
+
+  function showSuccess(){
+    success.style.display='flex';
+    success.classList.add('visible');
+    setTimeout(()=>{success.classList.remove('visible');success.style.display='none';},6000);
+  }
+  function showError(){
+    error.style.display='flex';
+    error.classList.add('visible');
+    setTimeout(()=>{error.classList.remove('visible');error.style.display='none';},6000);
+  }
 }
 
 /* ─── Modal ──────────────────────────────────────────── */
