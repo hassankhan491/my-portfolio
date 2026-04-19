@@ -937,6 +937,9 @@ body.nav-open .mobile-menu__panel {
 }
 
 @media(max-width:768px) {
+  h1.hero__name{
+    font-size: 75px;
+  }
   .project-card {
     width: clamp(260px, 80vw, 360px);
   }
