@@ -7,7 +7,20 @@
 /* ─── Project data ───────────────────────────────────── */
 const PROJECTS = [
   {
-    num:'01', title:'Idiom Similes', year:'2025', visual:'1',
+    num:'01', title:'SHAWQ', year:'2026', visual:'1',
+    url:'https://shawq.vercel.app/',
+    image:'./Images/Shawq.png',
+    desc:'A refined fragrance-house storefront for SHAWQ, created to make discovering a signature scent feel like an experience of its own. Rich editorial imagery, elegant typography, and warm tones showcase distinctive compositions of oud, amber, and rare botanicals, with a seamless path to explore the collection.',
+    tags:['React','Next.js','GSAP','E-commerce'],
+    rows:[
+      {label:'Role',     val:'Frontend Developer'},
+      {label:'Type',     val:'Fragrance E-commerce'},
+      {label:'Stack',    val:'React, Next.js, GSAP'},
+      {label:'Status',   val:'Portfolio Showcase'},
+    ],
+  },
+  {
+    num:'02', title:'Idiom Similes', year:'2025', visual:'1',
     url:'https://idiomsimile.com/',
     image:'./Images/idiom similies.png',
     desc:'An educational English-language platform dedicated to helping students and content creators master idioms, similes, and metaphors. The site offers clear explanations, real-life usage examples, and categorised browsing across hundreds of expressive phrases — making advanced English accessible and engaging.',
